@@ -1,24 +1,14 @@
-# Pull base ubuntu image.
-FROM ubuntu:16.04
+FROM ubuntu:16.04-java-8
 
-MAINTAINER Federico Catinello <fcatinello@gmail.com>
+# Create specific user to run container 
+RUN useradd -m federico
+USER federico:root
 
-RUN apt-get update && apt-get install -y software-properties-common && apt-get install sudo unzip \ 
-&& add-apt-repository -y ppa:webupd8team/java  && apt-get update
+WORKDIR /home/federico
 
-# Install Java.
-
-RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
-
-RUN apt-get install -y oracle-java8-installer
-
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
-
+# Set eap environment variables
 ENV JBOSS_VERSION 6.4.0
-ENV JBOSS_HOME /opt/jboss/EAP-6.4.0
-
-WORKDIR /opt/jboss
+ENV JBOSS_HOME /home/federico/EAP-6.4.0
 
 # Copy EAP to docker image
 COPY EAP-$JBOSS_VERSION.zip .
