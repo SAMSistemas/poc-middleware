@@ -1,0 +1,41 @@
+version: '3'
+services:
+  db:
+    container_name: db-poc-middleware
+    image: mysql:5.7
+    command: mysqld --user=root --verbose
+    volumes:
+      - ./db/schema_init.sql:/docker-entrypoint-initdb.d/schema_init.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=poc_middleware
+    ports:
+      - "192.168.1.3:3306:3306"
+  mq:
+    container_name: mq-poc-middleware
+    image: webcenter/activemq:5.14.3
+    environment:
+      - ACTIVEMQ_NAME=192.168.1.3
+      - ACTIVEMQ_STATIC_QUEUES=TRAMITES
+    ports:
+      - "192.168.1.3:61616:61616"
+      - "192.168.1.3:8161:8161"
+  middleware:
+    container_name: fuse-middleware
+    build: middleware/
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test
+      - ACTIVEMQ_NAME=192.168.1.3
+      - ACTIVEMQ_STATIC_QUEUES=TRAMITES
+    ports:
+      - "192.168.1.3:8080:8080"
+      - "192.168.1.3:8443:8443"
+      - "192.168.1.3:9990:9990"
+    depends_on:
+      - db
+      - mq
+    links:
+      - db
+      - mq
+  
