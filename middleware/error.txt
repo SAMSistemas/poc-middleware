@@ -1,1 +1,0 @@
-03:14:22,967 ERROR [org.jboss.as.server] (Controller Boot Thread) JBAS015956: Caught exception during boot: java.lang.IllegalStateException: JBAS014647: Could not rename /opt/jboss/EAP-6.4.0/standalone/configuration/standalone_xml_history/current to /opt/jboss/EAP-6.4.0/standalone/configuration/standalone_xml_history/20170727-031422964

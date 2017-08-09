@@ -5,33 +5,33 @@ services:
     image: mysql:5.7
     command: mysqld --user=root --verbose
     volumes:
-      - ./db/schema_init.sql:/docker-entrypoint-initdb.d/schema_init.sql
+      - ./db/schema_new.sql:/docker-entrypoint-initdb.d/schema_new.sql
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=poc_middleware
     ports:
-      - "10.0.0.121:3306:3306"
+      - "3306:3306"
   mq:
     container_name: mq-poc-middleware
     image: webcenter/activemq:5.14.3
     environment:
-      - ACTIVEMQ_NAME=10.0.0.121
+      - ACTIVEMQ_NAME=localhost
       - ACTIVEMQ_STATIC_QUEUES=TRAMITES
     ports:
-      - "10.0.0.121:61616:61616"
-      - "10.0.0.121:8161:8161"    
+      - "61616:61616"
+      - "8161:8161"
   middleware:
     container_name: fuse-middleware
     build: middleware/
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=test
-      - ACTIVEMQ_NAME=10.0.0.121
+      - ACTIVEMQ_NAME=localhost
       - ACTIVEMQ_STATIC_QUEUES=TRAMITES
     ports:
-      - "10.0.0.121:8080:8080"
-      - "10.0.0.121:8443:8443"
-      - "10.0.0.121:9990:9990"
+      - "8080:8080"
+      - "8443:8443"
+      - "9990:9990"
     depends_on:
       - db
       - mq

@@ -1,9 +1,5 @@
 FROM ubuntu:16.04-java-8
 
-# Create specific user to run container 
-RUN useradd -m federico
-USER federico:root
-
 WORKDIR /home/federico
 
 # Set eap environment variables
