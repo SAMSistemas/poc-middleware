@@ -1,0 +1,73 @@
+Formato de mensajes
+
+
+CLIENTE (JSON/SOAP)
+
+Request
+
+{
+	"socio":62369950701,
+	"tipo":"prestaciones",
+	"descripcion":"Radiología dental"
+}
+
+<soap:Envelope>
+	<soap:Body>
+		<tramite>
+			<socio>62369950701</socio>
+			<tipo>prestaciones</tipo>
+			<descripcion>Radiología dental</descripcion>
+		</tramite>
+	</soap:Body>
+</soap:Envelope>	
+
+Response
+
+{
+	"status":200,
+	"descripcion":"El tramite fue enviado para ser procesado"
+}
+
+<soap:Envelope>
+	<soap:Body>
+		<tramite>
+			<status>200</status>
+			<descripcion>El tramite fue enviado para ser procesado</descripcion>
+		</tramite>	
+	</soap:Body>
+</soap:Envelope>
+
+
+MQ (XML)
+
+<tramite>
+	<socio>62369950701</socio>
+	<tipo>prestaciones</tipo>
+	<descripcion>Radiología dental</descripcion>
+</tramite>
+
+
+Entre MQ y DB decido si es exitoso o no (quizas con un random)
+
+DB (SQL)
+
+- Inserto un registro en TramiteSocio con id|tipo|descripcion|exitoso|timestamp|id_socio
+
+Query:
+
+INSERT INTO poc_middleware.TramiteSocio(tipo,descripcion,exitoso,id_socio) 
+VALUES ($tipo,$descripcion,$exitoso, NOW(), SELECT id FROM poc_middleware.Socio s WHERE s.contrato = 62369950701)
+
+
+CRON (segundos) 
+
+- Obtengo los tramites desde el momento que ejecute el ultimo cron en la DB
+
+SELECT * FROM poc_middleware.TramiteSocio t, poc_middleware.Socio s 
+WHERE t.timestamp > $tiempoUltimoCron AND t.id_socio = s.id
+
+- Obtengo los datos y lleno el HTML con esos datos para luego enviarlo al socio que corresponda cada tramite por mail.
+
+
+
+IMPORTANTE: agregar datasource MySQL y modulo asociado
