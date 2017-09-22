@@ -3,7 +3,15 @@ Formato de mensajes
 
 CLIENTE (JSON/SOAP)
 
-Request
+Request GET
+
+/tramite/{nroSocio}
+
+/tramite?wsdl
+
+Request POST
+
+/tramite
 
 {
 	"socio":62369950701,
@@ -47,21 +55,21 @@ MQ (XML)
 </tramite>
 
 
-Entre MQ y DB decido si es exitoso o no (quizas con un random)
+Entre MQ y DB decido si es exitoso o no (ABIERTO o CERRADO)
 
 DB (SQL)
 
-- Inserto un registro en TramiteSocio con id|tipo|descripcion|exitoso|timestamp|id_socio
+- Inserto un registro en TramiteSocio con id|tipo|descripcion|estado|timestamp|id_socio
 
 Query:
 
-INSERT INTO poc_middleware.TramiteSocio(tipo,descripcion,exitoso,id_socio) 
-VALUES ($tipo,$descripcion,$exitoso, NOW(), SELECT id FROM poc_middleware.Socio s WHERE s.contrato = 62369950701)
+INSERT INTO poc_middleware.TramiteSocio(tipo,descripcion,estado,id_socio) 
+VALUES ($tipo,$descripcion,$estado, NOW(), SELECT id FROM poc_middleware.Socio s WHERE s.contrato = 62369950701)
 
 
 CRON (segundos) 
 
-- Obtengo los tramites desde el momento que ejecute el ultimo cron en la DB
+- Obtengo los tramites cerrados desde el momento que ejecute el ultimo cron en la DB
 
 SELECT * FROM poc_middleware.TramiteSocio t, poc_middleware.Socio s 
 WHERE t.timestamp > $tiempoUltimoCron AND t.id_socio = s.id
