@@ -36,7 +36,7 @@ public class ProcesadorTramiteRouteBuilder extends RouteBuilder {
 
 		// Manejo de excepciones
 		onException(Exception.class)
-			.log(LoggingLevel.ERROR, "ar.com.osde.services.clickexperts.routebuilder", "ProcesadorTramite exception: ${exception}")
+			.log(LoggingLevel.ERROR, "ar.com.samsistemas.services.tramites.routebuilder", "ProcesadorTramite exception: ${exception}")
 			.handled(true);
 
 		//Obtengo mensaje de la cola MQ correspondiente a un tramite
@@ -48,10 +48,9 @@ public class ProcesadorTramiteRouteBuilder extends RouteBuilder {
 	}
 
 	private String getQuery(){
-		return "INSERT INTO poc_middleware.TramiteSocio(tipo,descripcion,exitoso,timestamp,id_socio) " +
-				"VALUES (:#tipo,:#descripcion,:#exitoso, NOW(), (SELECT id FROM poc_middleware.Socio s WHERE s.contrato = :#contrato_socio))";
+		return "INSERT INTO poc_middleware.TramiteSocio(tipo,descripcion,estado,timestamp,id_socio) " +
+				"VALUES (:#tipo,:#descripcion,:#estado, NOW(), (SELECT id FROM poc_middleware.Socio s WHERE s.contrato = :#contrato_socio))";
 	}
-
 
 	private void procesarTramite(Exchange exchange) {
 
@@ -60,7 +59,7 @@ public class ProcesadorTramiteRouteBuilder extends RouteBuilder {
 		Map<String, Object> queryParameters = new HashMap<>();
 		queryParameters.put("tipo", tramite.getTipo());
 		queryParameters.put("descripcion", tramite.getDescripcion());
-		queryParameters.put("exitoso", Math.random()>0.5);
+		queryParameters.put("estado", (Math.random()>0.5)?"ABIERTO":"CERRADO");
 		queryParameters.put("contrato_socio", tramite.getSocioContrato());
 
 		exchange.getOut().setBody(queryParameters);
