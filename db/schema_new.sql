@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `poc_middleware`.`TramiteSocio` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `tipo` ENUM('CambioPlan', 'CambioDatosContacto', 'CambioFilial', 'Credencial', 'Prestacion', 'Reintegro') NULL DEFAULT NULL,
   `descripcion` VARCHAR(45) NULL DEFAULT NULL,
-  `exitoso` TINYINT(4) NULL DEFAULT '0',
+  `estado` VARCHAR(45) NULL,
   `timestamp` DATETIME NULL,
   `id_socio` INT(11) NOT NULL,
   PRIMARY KEY (`id`, `id_socio`),
