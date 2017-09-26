@@ -27,12 +27,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-cxf</artifactId>
-			<version>${camel.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jaxb</artifactId>
 			<version>${camel.version}</version>
 			<scope>provided</scope>
@@ -55,12 +49,6 @@
 			<groupId>org.jboss.spec.javax.ejb</groupId>
 			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
 			<version>${jboss.spec.javax.ejb.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.spec.javax.servlet</groupId>
-			<artifactId>jboss-servlet-api_3.0_spec</artifactId>
-			<version>1.0.2.Final-redhat-2</version>
 			<scope>provided</scope>
 		</dependency>
 

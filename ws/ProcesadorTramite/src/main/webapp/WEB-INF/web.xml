@@ -6,10 +6,6 @@
   <servlet>
     <servlet-name>ProcesadorTramiteServlet</servlet-name>
     <servlet-class>org.apache.camel.component.servlet.CamelHttpTransportServlet</servlet-class>
-    <init-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/camel-context.xml</param-value>
-    </init-param>
   </servlet>
 
   <servlet-mapping>

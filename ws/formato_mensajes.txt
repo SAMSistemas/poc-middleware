@@ -15,7 +15,7 @@ Request POST
 
 {
 	"socio":62369950701,
-	"tipo":"prestaciones",
+	"tipo":"Prestacion",
 	"descripcion":"Radiología dental"
 }
 

@@ -1,15 +1,20 @@
 package ar.com.samsistemas.middleware.solicitadortramite.entities;
 
+import ar.com.samsistemas.middleware.solicitadortramite.utils.LocalDateTimeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class TramiteSocioDTO {
 
-    private Integer id;
+    private transient Integer id;
     private String tipo;
     private String descripcion;
     private String estado;
+    @JsonAdapter(LocalDateTimeAdapter.class)
     private LocalDateTime timestamp;
-    private Integer id_socio;
+    private transient Integer id_socio;
 
     public Integer getId() {
         return id;
@@ -47,8 +52,8 @@ public class TramiteSocioDTO {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp.toLocalDateTime();
     }
 
     public Integer getId_socio() {
