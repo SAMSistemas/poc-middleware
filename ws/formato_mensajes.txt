@@ -55,7 +55,7 @@ MQ (XML)
 </tramite>
 
 
-Entre MQ y DB decido si es exitoso o no (ABIERTO o CERRADO)
+Entre MQ y DB decido si es exitoso o no (ANULADO o CERRADO)
 
 DB (SQL)
 
@@ -69,7 +69,7 @@ VALUES ($tipo,$descripcion,$estado, NOW(), SELECT id FROM poc_middleware.Socio s
 
 CRON (segundos) 
 
-- Obtengo los tramites cerrados desde el momento que ejecute el ultimo cron en la DB
+- Obtengo los tramites rechazados desde el momento que ejecute el ultimo cron en la DB
 
 SELECT * FROM poc_middleware.TramiteSocio t, poc_middleware.Socio s 
 WHERE t.timestamp > $tiempoUltimoCron AND t.id_socio = s.id

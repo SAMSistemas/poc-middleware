@@ -5,13 +5,11 @@ import javax.enterprise.context.ApplicationScoped;
 
 import static org.apache.activemq.camel.component.ActiveMQComponent.*;
 
-import ar.com.samsistemas.middleware.solicitadortramite.entities.TramiteSocioDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.ContextName;
 import org.apache.camel.dataformat.xmljson.XmlJsonDataFormat;
-import org.apache.camel.model.dataformat.JaxbDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 
 import java.util.HashMap;
@@ -26,12 +24,11 @@ public class SolicitadorTramiteRouteBuilder extends RouteBuilder {
 	@Override
 	public void configure() {
 
-		// Conecto con la instancia de ActiveMQ
+		/** Bind JMS connection with camel context **/
+
 		getContext().addComponent("activemq", activeMQComponent("tcp://localhost:61616"));
 
-//		JaxbDataFormat dbDataFormat = new JaxbDataFormat(true);
-//		dbDataFormat.setContextPath(TramiteSocioDTO.class.getPackage().getName());
-//		dbDataFormat.setPartClass(TramiteSocioDTO.class.getName());
+		/** Define XML to JSON dataformat **/
 
 		XmlJsonDataFormat xmlJsonFormat = new XmlJsonDataFormat();
 		xmlJsonFormat.setEncoding("UTF-8");
@@ -41,22 +38,26 @@ public class SolicitadorTramiteRouteBuilder extends RouteBuilder {
 		xmlJsonFormat.setSkipNamespaces(true);
 		xmlJsonFormat.setRemoveNamespacePrefixes(true);
 
-		// Manejo de excepciones
+		/** Exception handling **/
+
 		onException(Exception.class)
 			.log(LoggingLevel.ERROR, "ar.com.samsistemas.services.tramites.routebuilder", "SolicitadorTramite exception: ${exception}")
 			.handled(true)
 			.setFaultBody(simple("SolicitadorTramite exception: ${exception}"));
 
-		//Expongo el servicio en un servlet que acepta JSON/SOAP
+		/** Servlet that accepts JSON/SOAP **/
+
 		from("servlet:/?servletName=SolicitadorTramiteServlet")
 			.choice()
-				.when(header(Exchange.CONTENT_TYPE).isEqualTo("application/json"))
+				.when(header(Exchange.CONTENT_TYPE).isEqualTo("application/json")) //JSON
 					.to("direct:jsonRequest")
-				.when(header(Exchange.CONTENT_TYPE).in("text/xml","application/soap+xml"))
+				.when(header(Exchange.CONTENT_TYPE).in("text/xml","application/xml","application/soap+xml"))  //SOAP
 					.to("direct:soapRequest")
+				.when(header("wsdl"))
+					.to("language:simple:resource:classpath:/wsdl/SolicitadorTramite.wsdl")
 				.otherwise()
 					.log(LoggingLevel.ERROR, "ar.com.samsistemas.services.tramites.routebuilder", "El servicio espera JSON o XML")
-					.setBody(constant("El servicio espera JSON o XML"))
+					.setFaultBody(constant("Content-Type incorrecto. El servicio espera JSON o XML"))
 			.end();
 
 		/** JSON Routes **/
@@ -69,40 +70,43 @@ public class SolicitadorTramiteRouteBuilder extends RouteBuilder {
 					.to("direct:jsonPost")
 				.otherwise()
 					.log(LoggingLevel.ERROR, "ar.com.samsistemas.services.tramites.routebuilder", "Metodo HTTP incorrecto")
-					.setBody(constant("Metodo HTTP incorrecto. Solo GET y POST válidos"))
+					.setFaultBody(constant("Metodo HTTP incorrecto. Solo GET y POST válidos"))
 			.end();
 
 		from("direct:jsonGet")
 			.process(this::getRequestParameter)
-			.to("sql:"+getQuery()+"?dataSource=java:jboss/jdbc/mysql" +
-					"&outputClass=ar.com.samsistemas.middleware.solicitadortramite.entities.TramiteSocioDTO")
-			.marshal().json(JsonLibrary.Gson);
+//			.to("sql:"+getQuery()+"?dataSource=java:jboss/jdbc/mysql" +
+//					"&outputClass=ar.com.samsistemas.middleware.solicitadortramite.entities.TramiteSocioDTO") TODO: mock
+			.marshal().json(JsonLibrary.Jackson);
 
 		from("direct:jsonPost")
 			.unmarshal(xmlJsonFormat)
+			.log(LoggingLevel.DEBUG, "ar.com.samsistemas.services.tramites.routebuilder", "JSON to XML.. ${in.body}")
 			.to("direct:xmlToMQ")
-			.marshal(xmlJsonFormat);
+			.marshal(xmlJsonFormat)
+			.log(LoggingLevel.DEBUG, "ar.com.samsistemas.services.tramites.routebuilder", "XML to JSON.. ${in.body}");
 
 
 		/** SOAP Routes **/
 
 		from("direct:soapRequest")
 			.choice()
-				.when(header(Exchange.HTTP_METHOD).isEqualTo("GET"))
-					.to("language:simple:resource:classpath:/wsdl/SolicitadorTramite.wsdl")
 				.when(header(Exchange.HTTP_METHOD).isEqualTo("POST"))
 					.to("xslt://xslt/removeSoapEnvelope.xslt")
+					.log(LoggingLevel.DEBUG, "ar.com.samsistemas.services.tramites.routebuilder", "SOAP to XML.. ${in.body}")
 					.to("direct:xmlToMQ")
+					.to("xslt://xslt/addSoapEnvelope.xslt")
+					.log(LoggingLevel.DEBUG, "ar.com.samsistemas.services.tramites.routebuilder", "XML to SOAP.. ${in.body}")
 				.otherwise()
 					.log(LoggingLevel.ERROR, "ar.com.samsistemas.services.tramites.routebuilder", "Metodo HTTP incorrecto")
-					.setBody(constant("Metodo HTTP incorrecto. Solo GET y POST válidos"))
+					.setFaultBody(constant("Metodo HTTP incorrecto. Solo GET y POST válidos"))
 			.end();
 
 
 		/** Common Routes **/
 
 		from("direct:xmlToMQ")
-			.to("activemq:TRAMITES")
+			.to("activemq:TRAMITES?exchangePattern=InOnly")
 			.setHeader("status", constant(200))
 			.setHeader("descripcion", constant("El tramite fue enviado para ser procesado"))
 			.to("xslt://xslt/response.xslt");
@@ -111,17 +115,15 @@ public class SolicitadorTramiteRouteBuilder extends RouteBuilder {
 
 	private void getRequestParameter(Exchange exchange) {
 
-		String path = exchange.getIn().getHeader(Exchange.HTTP_PATH, String.class);
-
 		Map<String, Object> queryParameters = new HashMap<>();
-		queryParameters.put("contrato_socio", path.substring(path.lastIndexOf("/")));
+		queryParameters.put("contrato_socio", exchange.getIn().getHeader("socio", String.class));
 
 		exchange.getOut().setBody(queryParameters);
 	}
 
 
 	private String getQuery(){
-		return "SELECT * FROM poc_middleware.TramiteSocioDTO " +
+		return "SELECT * FROM poc_middleware.TramiteSocio " +
 				"WHERE id_socio = (SELECT id FROM poc_middleware.Socio s WHERE s.contrato = :#contrato_socio)";
 	}
 

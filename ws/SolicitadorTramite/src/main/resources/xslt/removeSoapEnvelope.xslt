@@ -5,7 +5,7 @@
 	exclude-result-prefixes="xsl xs soap">
 
 	<xsl:template match="/">
-		<xsl:copy-of select="/tramite" />
+		<xsl:copy-of select="//tramite" />
 	</xsl:template>
 
 </xsl:stylesheet>

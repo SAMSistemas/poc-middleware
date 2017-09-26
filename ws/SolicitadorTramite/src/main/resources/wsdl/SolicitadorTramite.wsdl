@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<wsdl:definitions name="ClickExpertsService"
+<wsdl:definitions name="SolicitarTramiteService"
 				  targetNamespace="ar.com.samsistemas.services.tramites"
 				  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
 				  xmlns:tns="ar.com.samsistemas.services.tramites"

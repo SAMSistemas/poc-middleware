@@ -8,14 +8,10 @@
 	<xsl:param name="descripcion" />
 
 	<xsl:template match="/">
-		<soap:Envelope>
-			<soap:Body>
-				<tramiteResponse>
-					<status><xsl:value-of select="$status" /></status>
-					<descripcion><xsl:value-of select="$descripcion" /></descripcion>
-				</tramiteResponse>
-			</soap:Body>
-		</soap:Envelope>
+		<tramiteResponse>
+			<status><xsl:value-of select="$status" /></status>
+			<descripcion><xsl:value-of select="$descripcion" /></descripcion>
+		</tramiteResponse>
 	</xsl:template>
 
 </xsl:stylesheet>

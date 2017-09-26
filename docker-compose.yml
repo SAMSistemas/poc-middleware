@@ -22,7 +22,7 @@ services:
       - "8161:8161"
   middleware:
     container_name: fuse-middleware
-    build: middleware/
+    build: esb/
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=test
