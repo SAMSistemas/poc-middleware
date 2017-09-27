@@ -20,7 +20,7 @@ services:
     ports:
       - "61616:61616"
       - "8161:8161"
-  middleware:
+  esb:
     container_name: fuse-middleware
     build: esb/
     environment:
