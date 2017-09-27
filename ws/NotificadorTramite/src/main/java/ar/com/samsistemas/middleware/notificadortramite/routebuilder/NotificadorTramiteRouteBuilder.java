@@ -32,6 +32,8 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 	@Resource(lookup = "java:jboss/jdbc/mysql")
 	private DataSource dataSource;
 
+	private String lastExecution = null;
+
 	private static final String MAIL_ENDPOINT_URL = "NotificadorTramite.ProviderURI";
 	private static final String MAIL_ENDPOINT_TOKEN = "NotificadorTramite.ProviderToken";
 
@@ -60,6 +62,7 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 		/** Cron that is being fired after a fixed period **/
 
 		from("timer:foo?period=1m")
+			.process(this::initExecution)
 			.to("sql:"+getQuery()+"?dataSource=mysqlDS" +
 					"&outputClass=ar.com.samsistemas.middleware.notificadortramite.entities.TramiteMailSocioDTO")
 			.process(this::processResponseData);
@@ -73,6 +76,14 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 
 	}
 
+	private void initExecution(Exchange exchange) {
+
+		lastExecution = System.getProperty("lastExecution");
+
+		if(lastExecution == null) lastExecution = LocalDateTime.MIN.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+	}
+
 	private String getQuery() {
 
 		return "SELECT socio.nombre, socio.mail, tramite.tipo, tramite.descripcion " +
@@ -80,10 +91,13 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 				"INNER JOIN poc_middleware.TramiteSocio AS tramite " +
 				"ON tramite.id_socio = socio.id " +
 				"WHERE tramite.estado = 'RECHAZADO' " +
-				"AND tramite.timestamp > '"+LocalDateTime.now().minusMinutes(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)+"'";
+				"AND tramite.timestamp > '" + lastExecution + "'";
 	}
 
 	private void processResponseData(Exchange exchange) {
+
+		/** Set lastExecution time **/
+		System.setProperty("lastExecution", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
 		List<TramiteMailSocioDTO> response = exchange.getIn().getBody(List.class);
 
