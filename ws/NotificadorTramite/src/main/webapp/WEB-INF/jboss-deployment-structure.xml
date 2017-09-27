@@ -2,7 +2,6 @@
 <jboss-deployment-structure>
     <deployment>
         <dependencies>
-            <module name="org.apache.camel.component.activemq" />
             <module name="org.apache.camel.component.sql" export="true" meta-inf="export"/>
         </dependencies>
     </deployment>

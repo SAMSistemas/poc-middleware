@@ -19,7 +19,7 @@ Request POST
 	"descripcion":"Radiología dental"
 }
 
-<soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> 
 	<soap:Body>
 		<tramite>
 			<socio>62369950701</socio>

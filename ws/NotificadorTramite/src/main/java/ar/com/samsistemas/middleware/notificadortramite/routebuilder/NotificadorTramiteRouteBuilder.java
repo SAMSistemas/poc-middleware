@@ -15,7 +15,11 @@ import org.apache.camel.cdi.ContextName;
 import org.apache.camel.impl.CompositeRegistry;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +33,7 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 	private DataSource dataSource;
 
 	private static final String MAIL_ENDPOINT_URL = "NotificadorTramite.ProviderURI";
-	private static final String MAIL_ENDPOINT_TOKEN = "NotificadorTramite.ProviderToken"; //TODO: falta agregar esto en JBoss
+	private static final String MAIL_ENDPOINT_TOKEN = "NotificadorTramite.ProviderToken";
 
 	@Override
 	public void configure() {
@@ -65,23 +69,25 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 		from("direct:sendMail")
 			.setHeader("X-Mailtrack-Token", systemProperty(MAIL_ENDPOINT_TOKEN))
 			.setHeader("Content-Type", constant("application/json"))
-			.to("http4://"+MAIL_ENDPOINT_URL);
+			.to("http4://"+System.getProperty(MAIL_ENDPOINT_URL));
 
 	}
 
-	private String getQuery() { //TODO: falta agregar nombre en la db y ultimo cron ejecutado
+	private String getQuery() {
+
 		return "SELECT socio.nombre, socio.mail, tramite.tipo, tramite.descripcion " +
 				"FROM poc_middleware.Socio AS socio " +
 				"INNER JOIN poc_middleware.TramiteSocio AS tramite " +
 				"ON tramite.id_socio = socio.id " +
-				"WHERE tramite.estado = 'RECHAZADO'";
+				"WHERE tramite.estado = 'RECHAZADO' " +
+				"AND tramite.timestamp > '"+LocalDateTime.now().minusMinutes(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)+"'";
 	}
 
 	private void processResponseData(Exchange exchange) {
 
 		List<TramiteMailSocioDTO> response = exchange.getIn().getBody(List.class);
 
-		if(response == null) return; /** If db does not have new data **/
+		if(response.isEmpty()) return; /** If db does not have new data **/
 
 		response.forEach( tramiteMailSocioDTO -> {
 
@@ -101,8 +107,11 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 		jsonData.put("to_email", mailData.getMail());
 		jsonData.put("subject", "Notificacion sobre tramite rechazado");
 
-		//TODO: levantar html, reemplazar data y agregarlo
 		String initialHtml = "";
+
+		try {
+			initialHtml = FileUtils.readFileToString(new File(System.getProperty("jboss.server.config.dir")+"/tramite.html"));
+		} catch (Exception ex) { ex.printStackTrace(); }
 
 		String finalHtml= initialHtml.replace("{nombre_socio}", mailData.getNombre())
 								.replace("{tipo_tramite}", mailData.getTipo())

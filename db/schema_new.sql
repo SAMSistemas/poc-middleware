@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS `poc_middleware`.`Socio` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `contrato` VARCHAR(45) NULL DEFAULT NULL,
   `titular` TINYINT(4) NULL DEFAULT '1',
+  `nombre` VARCHAR(256) NULL DEFAULT NULL,
   `mail` VARCHAR(256) NULL DEFAULT NULL,
   `telefono` VARCHAR(45) NULL DEFAULT NULL,
   `id_localizacion` INT(11) NOT NULL,
@@ -148,8 +149,8 @@ INSERT INTO poc_middleware.Localizacion(calle, altura, codigo_postal, localidad_
     ('Rincon', 1224, 5000, 'Cordoba', Point(-31.407752,-64.169209), 'Argentina', 'Cordoba'),
     ('Libertad', 273, 4000, 'S.M. de Tucuman', Point(-26.830897,-65.224328), 'Argentina', 'Tucuman');
 
-INSERT INTO poc_middleware.Socio(contrato, mail, telefono, id_plan, id_filial, id_localizacion)
-VALUES (62369950701, 'fcatinello@gmail.com', '1137786481', 2, 2, 1),
-  (61345630601, 'leandro.aless@gmail.com', '1154632312', 3, 1, 2),
-  (60256930901, 'walterchere@gmail.com', '1187654532', 1, 4, 4),
-  (625643806101, 'jonatan.salas.js@gmail.com', '1135678798', 5, 3, 3);    
+INSERT INTO poc_middleware.Socio(contrato, nombre, mail, telefono, id_plan, id_filial, id_localizacion)
+VALUES (62369950701, 'Federico Catinello', 'fcatinello@gmail.com', '1137786481', 2, 2, 1),
+  (61345630601, 'Leandro Alessandrello', 'leandro.aless@gmail.com', '1154632312', 3, 1, 2),
+  (60256930901, 'Walter Chere', 'walterchere@gmail.com', '1187654532', 1, 4, 4),
+  (625643806101, 'Jonatan Salas', 'jonatan.salas.js@gmail.com', '1135678798', 5, 3, 3);    
