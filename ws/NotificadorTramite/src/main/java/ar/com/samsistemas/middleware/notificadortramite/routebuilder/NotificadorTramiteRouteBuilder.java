@@ -16,6 +16,8 @@ import org.apache.camel.impl.CompositeRegistry;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 	@Resource(lookup = "java:jboss/jdbc/mysql")
 	private DataSource dataSource;
 
+	private static final Logger LOG = LoggerFactory.getLogger(NotificadorTramiteRouteBuilder.class);
 	private String lastExecution = null;
 
 	private static final String MAIL_ENDPOINT_URL = "NotificadorTramite.ProviderURI";
@@ -61,8 +64,7 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 
 		/** Cron that is being fired after a fixed period **/
 
-		from("timer:foo?period=1m")
-			.process(this::initExecution)
+		from("timer:foo?period=2m")
 			.to("sql:"+getQuery()+"?dataSource=mysqlDS" +
 					"&outputClass=ar.com.samsistemas.middleware.notificadortramite.entities.TramiteMailSocioDTO")
 			.process(this::processResponseData);
@@ -72,15 +74,7 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 		from("direct:sendMail")
 			.setHeader("X-Mailtrack-Token", systemProperty(MAIL_ENDPOINT_TOKEN))
 			.setHeader("Content-Type", constant("application/json"))
-			.to("http4://"+System.getProperty(MAIL_ENDPOINT_URL));
-
-	}
-
-	private void initExecution(Exchange exchange) {
-
-		lastExecution = System.getProperty("lastExecution");
-
-		if(lastExecution == null) lastExecution = LocalDateTime.MIN.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			.to("http4://"+System.getProperty(MAIL_ENDPOINT_URL)+"?throwExceptionOnFailure=false");
 
 	}
 
@@ -91,13 +85,10 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 				"INNER JOIN poc_middleware.TramiteSocio AS tramite " +
 				"ON tramite.id_socio = socio.id " +
 				"WHERE tramite.estado = 'RECHAZADO' " +
-				"AND tramite.timestamp > '" + lastExecution + "'";
+				"AND tramite.timestamp > DATE_SUB(NOW(), INTERVAL 2 MINUTE)";
 	}
 
 	private void processResponseData(Exchange exchange) {
-
-		/** Set lastExecution time **/
-		System.setProperty("lastExecution", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
 		List<TramiteMailSocioDTO> response = exchange.getIn().getBody(List.class);
 
