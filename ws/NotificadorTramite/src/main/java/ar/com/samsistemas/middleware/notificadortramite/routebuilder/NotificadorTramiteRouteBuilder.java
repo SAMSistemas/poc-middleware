@@ -74,7 +74,8 @@ public class NotificadorTramiteRouteBuilder extends RouteBuilder {
 		from("direct:sendMail")
 			.setHeader("X-Mailtrack-Token", systemProperty(MAIL_ENDPOINT_TOKEN))
 			.setHeader("Content-Type", constant("application/json"))
-			.to("http4://"+System.getProperty(MAIL_ENDPOINT_URL)+"?throwExceptionOnFailure=false");
+			.setHeader(Exchange.HTTP_URI, systemProperty(MAIL_ENDPOINT_URL))
+			.to("http4://foo?throwExceptionOnFailure=false");
 
 	}
 
