@@ -6,6 +6,7 @@ services:
     command: mysqld --user=root --verbose
     volumes:
       - ./db/schema_new.sql:/docker-entrypoint-initdb.d/schema_new.sql
+      - ./db/conf:/etc/mysql/conf.d
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=poc_middleware
@@ -15,18 +16,20 @@ services:
     container_name: mq-poc-middleware
     image: webcenter/activemq:5.14.3
     environment:
-      - ACTIVEMQ_NAME=localhost
+      - ACTIVEMQ_NAME=172.18.0.3
       - ACTIVEMQ_STATIC_QUEUES=TRAMITES
     ports:
       - "61616:61616"
       - "8161:8161"
+    depends_on:
+      - db
   esb:
     container_name: fuse-middleware
     build: esb/
     environment:
       - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=test
-      - ACTIVEMQ_NAME=localhost
+      - MYSQL_DATABASE=poc_middleware
+      - ACTIVEMQ_NAME=172.18.0.3
       - ACTIVEMQ_STATIC_QUEUES=TRAMITES
     ports:
       - "8080:8080"

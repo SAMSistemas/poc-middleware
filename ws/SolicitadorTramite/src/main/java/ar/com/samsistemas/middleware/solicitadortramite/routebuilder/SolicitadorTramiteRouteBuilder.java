@@ -35,7 +35,7 @@ public class SolicitadorTramiteRouteBuilder extends RouteBuilder {
 
 		/** Bind JMS connection with camel context **/
 
-		getContext().addComponent("activemq", activeMQComponent("tcp://localhost:61616"));
+		getContext().addComponent("activemq", activeMQComponent("tcp://172.18.0.3:61616"));
 
 		/** Bind JDBC datasource to camel context **/
 

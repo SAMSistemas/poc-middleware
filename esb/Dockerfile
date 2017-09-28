@@ -11,6 +11,9 @@ COPY EAP-$JBOSS_VERSION.zip .
 
 RUN unzip EAP-$JBOSS_VERSION.zip && rm -rf EAP-$JBOSS_VERSION.zip
 
+# Remove rotate history configuration file 
+RUN rm -rf $JBOSS_HOME/standalone/configuration/standalone_xml_history/current
+
 # Expose managment console and http/https ports
 EXPOSE 8080 8443 9990
 
