@@ -153,4 +153,4 @@ INSERT INTO poc_middleware.Socio(contrato, nombre, mail, telefono, id_plan, id_f
 VALUES (62369950701, 'Federico Catinello', 'fcatinello@gmail.com', '1137786481', 2, 2, 1),
   (61345630601, 'Leandro Alessandrello', 'leandro.aless@gmail.com', '1154632312', 3, 1, 2),
   (60256930901, 'Walter Chere', 'walterchere@gmail.com', '1187654532', 1, 4, 4),
-  (625643806101, 'Jonatan Salas', 'jonatan.salas.js@gmail.com', '1135678798', 5, 3, 3);    
+  (62564380610, 'Jonatan Salas', 'jonatan.salas.js@gmail.com', '1135678798', 5, 3, 3);    
